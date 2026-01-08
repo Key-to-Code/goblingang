@@ -1,10 +1,8 @@
-
 import { getBalance, getRecentTransactions } from './actions'
 import { TransactionForm } from './transaction-form'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/format'
-import { AlertCircle, TrendingUp, TrendingDown, Wallet, ArrowUpRight, ArrowDownRight, Activity } from 'lucide-react'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { TrendingUp, TrendingDown, Wallet, ArrowUpRight, ArrowDownRight, Activity } from 'lucide-react'
 import { ModeToggle } from '@/components/mode-toggle'
 import { Badge } from '@/components/ui/badge'
 import { createClient } from '@/lib/supabase/server'
@@ -81,7 +79,8 @@ export default async function DashboardPage() {
             </div>
 
             {/* Main Content */}
-            <div className="grid gap-6 md:grid-cols-7 lg:grid-cols-7">
+            {/* ✅ FIXED: Added 'items-start' so columns don't stretch to match each other's height */}
+            <div className="grid gap-6 md:grid-cols-7 lg:grid-cols-7 items-start">
                 {/* Recent Transactions List */}
                 <Card className="col-span-1 md:col-span-4 lg:col-span-4 border shadow-sm">
                     <CardHeader>
@@ -124,17 +123,16 @@ export default async function DashboardPage() {
                         </div>
                     </CardContent>
                 </Card>
-               
+
                 {/* Transaction Form */}
                 <div className="col-span-1 md:col-span-3 lg:col-span-3 space-y-6">
-                    
+
                     {/* 3. VOICE AGENT: Placed here for perfect alignment */}
-                    {/* We pass the userId so the agent knows who is talking immediately */}
-                    <VoiceExpenseLogger userId={user?.id || ''} /> 
+                    <VoiceExpenseLogger userId={user?.id || ''} />
 
                     {/* MANUAL FORM: Placed below voice agent */}
                     <TransactionForm />
-                    
+
                 </div>
             </div>
         </div>

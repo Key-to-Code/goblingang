@@ -1,5 +1,5 @@
-// 1. Change the import (Don't use the server client for this)
 import { createClient } from '@supabase/supabase-js' 
+import { revalidatePath } from 'next/cache'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(req: NextRequest) {
@@ -11,12 +11,14 @@ export async function POST(req: NextRequest) {
             const functionName = toolCall.function.name
 
             if (functionName === 'logTransaction') {
+                // 1. Parse Arguments
                 let args = toolCall.function.arguments;
                 if (typeof args === 'string') {
                     args = JSON.parse(args);
                 }
                 const { amount, type, category, description } = args;
 
+                // 2. Extract User ID
                 const callObj = body.message.call;
                 const userId = callObj?.assistantOverrides?.metadata?.userId || callObj?.metadata?.userId;
 
@@ -26,12 +28,47 @@ export async function POST(req: NextRequest) {
                     });
                 }
 
-                // 2. ✅ FIXED: Create an Admin Client to bypass RLS
+                // 3. Create Admin Client
                 const supabaseAdmin = createClient(
                     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-                    process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY! // <--- This key bypasses RLS
+                    process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY!
                 );
 
+                // --- NEW: BALANCE VALIDATION LOGIC ---
+                if (type === 'expense') {
+                    // Fetch all existing transactions for this user to calculate balance
+                    const { data: transactions, error: fetchError } = await supabaseAdmin
+                        .from('transactions')
+                        .select('amount, type')
+                        .eq('user_id', userId);
+
+                    if (fetchError) {
+                        console.error("Balance Check Error:", fetchError);
+                        return NextResponse.json({
+                            results: [{ toolCallId: toolCall.id, result: "I couldn't check your balance due to a system error." }]
+                        });
+                    }
+
+                    // Calculate current balance
+                    const currentBalance = (transactions || []).reduce((acc, t) => {
+                        const val = Number(t.amount);
+                        return t.type === 'income' ? acc + val : acc - val;
+                    }, 0);
+
+                    // Check if expense exceeds balance
+                    if (currentBalance - Number(amount) < 0) {
+                        return NextResponse.json({
+                            results: [{ 
+                                toolCallId: toolCall.id, 
+                                // The AI will read this exact message to the user
+                                result: `Transaction failed. You only have ${currentBalance} rupees available, but you tried to spend ${amount}.` 
+                            }]
+                        });
+                    }
+                }
+                // --- END VALIDATION ---
+
+                // 4. Insert Transaction (Only if validation passed)
                 const { error } = await supabaseAdmin.from('transactions').insert([
                     {
                         amount: amount,
@@ -50,6 +87,8 @@ export async function POST(req: NextRequest) {
                     });
                 }
 
+                revalidatePath('/dashboard')
+                
                 return NextResponse.json({
                     results: [
                         {
