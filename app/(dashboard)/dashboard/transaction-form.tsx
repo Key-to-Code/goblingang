@@ -37,14 +37,15 @@ const formSchema = z.object({
     description: z.string().optional(),
 })
 
-type FormValues = z.infer<typeof formSchema>
+type FormInput = z.input<typeof formSchema>
+type FormOutput = z.output<typeof formSchema>
 
 export function TransactionForm() {
     const { toast } = useToast()
     const [loading, setLoading] = useState(false)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-    const form = useForm<FormValues>({
+    const form = useForm<FormInput, unknown, FormOutput>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             type: 'expense',
@@ -54,7 +55,7 @@ export function TransactionForm() {
         },
     })
 
-    async function onSubmit(values: FormValues) {
+    async function onSubmit(values: FormOutput) {
         setLoading(true)
         const formData = new FormData()
         formData.append('type', values.type)
@@ -147,10 +148,11 @@ export function TransactionForm() {
                                                 type="number"
                                                 placeholder="0.00"
                                                 className="pl-9"
-                                                defaultValue={""}
-                                                min={""}
+                                                min={0}
                                                 step={0.01}
                                                 {...field}
+                                                value={field.value as number ?? 0}
+                                                onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
                                             />
                                         </div>
                                     </FormControl>
