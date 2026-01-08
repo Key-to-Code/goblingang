@@ -118,5 +118,5 @@ This project strictly avoids hard-coded secrets. You **MUST** create a `.env` fi
 * **Compliance**: This is a prototype; strictly for educational/hackathon purposes and not a licensed banking product.
 
 ---
-
+## We have added the Vercel live demo link, Docker Image Link and the Ngrok link
 *Built for Build2Break 2026*
