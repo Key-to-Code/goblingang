@@ -85,26 +85,28 @@ This project strictly avoids hard-coded secrets. You **MUST** create a `.env` fi
     # ------------------------------
     NEXT_PUBLIC_SUPABASE_URL=[https://your-project.supabase.co](https://your-project.supabase.co)
     NEXT_PUBLIC_SUPABASE_ANON_KEY=your_public_anon_key
-    
-    
     NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY=your_secret_service_role_key
 
     # ------------------------------
     # 2. AI Integration
     # ------------------------------
     # Used for Voice Agent (Vapi.ai)
+    
     NEXT_PUBLIC_VAPI_PUBLIC_KEY=your_vapi_public_key
     
     # Used for Insights (Gemini)
+
     GOOGLE_AI_API_KEY=your_gemini_api_key
 
     # ------------------------------
     # 3. Payments (Razorpay)
     # ------------------------------
     # Public key for frontend checkout
+
     NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_...
     
     # Secret key for verifying payments (Server-side only)
+
     RAZORPAY_KEY_SECRET=your_razorpay_secret
     ```
 
