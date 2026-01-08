@@ -87,7 +87,7 @@ export function Sidebar({ userEmail, userAvatarUrl }: SidebarProps) {
                                 </div>
                             </div>
                             <form action={signOut}>
-                                <Button variant="outline" className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20">
+                                <Button variant="outline" className="w-full justify-center text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20">
                                     <LogOut className="mr-2 h-4 w-4" />
                                     Log out
                                 </Button>
@@ -136,7 +136,7 @@ export function Sidebar({ userEmail, userAvatarUrl }: SidebarProps) {
                         </div>
                     </div>
                     <form action={signOut}>
-                        <Button variant="outline" className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20">
+                        <Button variant="outline" className="w-full justify-center text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20">
                             <LogOut className="mr-2 h-4 w-4" />
                             Log out
                         </Button>
