@@ -28,7 +28,7 @@ export async function saveUserProfile(formData: {
             .from('users')
             .update({
                 name: formData.name,
-                email: formData.email,
+                email: user.email,
                 monthly_budget: formData.monthlyBudget,
                 onboarding_completed: true,
             })
@@ -40,7 +40,7 @@ export async function saveUserProfile(formData: {
             .insert({
                 user_id: user.id,
                 name: formData.name,
-                email: formData.email,
+                email: user.email,
                 monthly_budget: formData.monthlyBudget,
                 onboarding_completed: true,
             })

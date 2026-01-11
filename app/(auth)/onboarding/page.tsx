@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { useRouter } from 'next/navigation'
+import { redirect, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -65,9 +65,7 @@ function OnboardingForm() {
             return
         }
 
-        // Sign out and redirect to login
-        await supabase.auth.signOut()
-        router.push('/login?onboarded=true')
+        redirect('/dashboard');
     }
 
     if (checkingAuth) {

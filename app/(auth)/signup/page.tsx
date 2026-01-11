@@ -3,6 +3,7 @@ import { useState, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { useToast } from '@/components/ui/use-toast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -16,6 +17,7 @@ function SignupForm() {
     const [error, setError] = useState<string | null>(null)
     const router = useRouter()
     const supabase = createClient()
+    const { toast } = useToast()
 
     const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -37,6 +39,9 @@ function SignupForm() {
         const { error: signUpError } = await supabase.auth.signUp({
             email,
             password,
+            options: {
+                emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/login`,
+            },
         })
 
         if (signUpError) {
@@ -45,8 +50,16 @@ function SignupForm() {
             return
         }
 
-        // Signup successful, redirect to onboarding
-        router.push('/onboarding')
+        // Signup successful — show confirmation toast and send user to login page
+        toast({
+            title: 'Confirmation email sent',
+            description: 'Please check your inbox and click the confirmation link to activate your account.',
+        })
+
+        // Small delay to allow the toast to be visible before redirect
+        setTimeout(() => {
+            router.push('/login')
+        }, 700)
         setLoading(false)
     }
 

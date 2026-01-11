@@ -3,11 +3,13 @@
 import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useToast } from '@/components/ui/use-toast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { LayoutDashboard, Loader2, CheckCircle2 } from 'lucide-react'
 import { motion } from 'framer-motion'
+import Link from 'next/link'
 
 function LoginForm() {
     const [email, setEmail] = useState('')
@@ -17,6 +19,7 @@ function LoginForm() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const supabase = createClient()
+    const { toast } = useToast()
 
     const justOnboarded = searchParams.get('onboarded') === 'true'
 
@@ -25,30 +28,54 @@ function LoginForm() {
         setLoading(true)
         setError(null)
 
-        const { error: signInError } = await supabase.auth.signInWithPassword({
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({
             email,
             password,
         })
 
         if (signInError) {
-            const { error: signUpError } = await supabase.auth.signUp({
-                email,
-                password,
-            })
+            setError(signInError.message)
+            toast({ title: 'Sign in failed', description: signInError.message })
+            setLoading(false)
+            return
+        }
 
-            if (signUpError) {
-                setError(signInError.message)
-            } else {
-                router.refresh()
+        // Get authenticated user
+        const { data: userData } = await supabase.auth.getUser()
+        const user = userData?.user
+
+        if (!user) {
+            // Fallback: go to login
+            router.push('/login')
+            setLoading(false)
+            return
+        }
+
+        // Check onboarding status
+        try {
+            const { data: profile, error: profileError } = await supabase
+                .from('users')
+                .select('onboarding_completed')
+                .eq('user_id', user.id)
+                .single()
+
+            if (profileError && profileError.code !== 'PGRST116') {
+                // If any unexpected error, fallback to dashboard
+                console.warn('Profile lookup error', profileError)
                 router.push('/dashboard')
+            } else {
+                const completed = profile?.onboarding_completed ?? false
+                if (completed) {
+                    router.push('/dashboard')
+                } else {
+                    router.push('/onboarding')
+                }
             }
-        } else {
-            router.refresh()
+        } catch (err) {
+            console.error('Error checking onboarding', err)
             router.push('/dashboard')
         }
 
-        router.refresh()
-        router.push('/dashboard')
         setLoading(false)
     }
 
@@ -112,7 +139,7 @@ function LoginForm() {
                     </div>
 
                     <div className="text-sm text-gray-500">
-                        &copy; 2024 PayAware Inc.
+                        &copy; 2026 PayAware Inc.
                     </div>
                 </div>
             </div>
@@ -201,6 +228,7 @@ function LoginForm() {
                                         )}
                                         Continue with Email
                                     </Button>
+                                    <span className='text-sm flex gap-2 items-center justify-center m-4'>New user? <Link href="/signup" className="text-blue-600 hover:underline">Sign up here</Link></span>
                                 </motion.div>
                             </div>
                         </form>
